@@ -1437,6 +1437,7 @@ function voxHit(V, qx, qy, qz, ex, ey, ez, tlim) {
   const sx = dx > 0 ? 1 : -1, sy = dy > 0 ? 1 : -1, sz = dz > 0 ? 1 : -1;
   const tdx = dx ? Math.abs(1 / dx) : 1e30, tdy = dy ? Math.abs(1 / dy) : 1e30, tdz = dz ? Math.abs(1 / dz) : 1e30;
   let tmx = dx ? t0 + (dx > 0 ? ix + 1 - gx : gx - ix) * tdx : 1e30, tmy = dy ? t0 + (dy > 0 ? iy + 1 - gy : gy - iy) * tdy : 1e30, tmz = dz ? t0 + (dz > 0 ? iz + 1 - gz : gz - iz) * tdz : 1e30;
+  if (!(ix >= 0 && iy >= 0 && iz >= 0 && tmx === tmx && tmy === tmy && tmz === tmz)) return -1;   // entrada inválida (NaN): sem isso o laço não acaba
   let t = t0, ax = ax0;
   for (;;) {
     const j = (iz * ny + iy) * nx + ix, c = o[j];
@@ -5705,7 +5706,7 @@ function updateCreatures(dt) {
 function creaturesPass(ox, oy, oz, rx, rz, ux, uy, uz, fx, fy, fz) {
   for (const c of ACTIVE) {
     c.vis = false;
-    if (c.cull) continue;
+    if (c.cull || !(c.scale > 1e-3)) continue;        // saindo da bola com tamanho 0: nada a desenhar (e 1/0 viraria NaN)
     const s = c.scale, R = c.sp.R * s;
     const yo = c.yoff || 0, vx = c.x - ox, vy = c.sp.cy * s + yo - oy, vz = c.z - oz;
     const zc = vx * fx + vy * fy + vz * fz, dist = Math.hypot(vx, vy, vz);
